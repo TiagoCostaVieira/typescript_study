@@ -1,0 +1,78 @@
+class HashTable{
+    table = new Array(3);
+    private qtyItems = 0;
+
+    private hashKey(key: string | number, size: number){
+        if(typeof key === 'number'){
+            return key % size;
+        }
+
+        let hashIndex = 2;
+        for(let i = 0; i < key.length; i++){
+            hashIndex = (13 * hashIndex * key.charCodeAt(i) % size);
+        }
+        return hashIndex;
+    }
+
+    getItem(key: string | number){
+         const index = this.hashKey(key, this.table.length);
+
+        if(index >= 0){
+            const item = this.table[index].find((x: any) => x[0] === key);
+
+            return item ? item[1]: 'Item does not exists';
+        }
+    }
+    private resize(){
+        const newHashtable = new Array(this.table.length * 2);
+
+        this.table.forEach(item => {
+            if(item){
+                item.forEach(([key, value]:[key:string | number, value: any]) => {
+                    const index = this.hashKey(key, newHashtable.length);
+
+                if(![null, undefined].includes(newHashtable[index])){
+                    newHashtable[index].push({key, value});
+                    return;
+                }
+                newHashtable[index] = [[key, value]];
+                })
+            }
+        });
+        this.table = newHashtable;
+    }
+
+    setItem(key: string | number, value: any){
+        this.qtyItems++;
+        const loadFactor = this.qtyItems / this.table.length;
+        if(loadFactor > 0.8){
+            this.resize();
+        }
+        const index = this.hashKey(key, this.table.length);
+        if(![null, undefined].includes(this.table[index])){
+            this.table[index].push([key, value])
+            return
+        }
+
+        if(index >= 0){
+            this.table[index] = [[key, value]];
+        }
+    }
+}
+
+const table = new HashTable;
+
+
+table.setItem('FirstName', 'Tiago');
+console.log(table.table.length);
+table.setItem('MidName', 'Costa');
+console.log(table.table.length);
+table.setItem('lastName', 'Vieira');
+console.log(table.table.length);
+table.setItem('age', '21');
+console.log(table.table.length);
+
+console.log(table.getItem('FirstName'))
+console.log(table.getItem('MidName'))
+console.log(table.getItem('lastName'))
+console.log(table.getItem('age'))
